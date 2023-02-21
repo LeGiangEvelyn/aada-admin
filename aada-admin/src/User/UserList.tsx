@@ -10,7 +10,7 @@ import {
   ExportButton,
 } from "react-admin";
 
-const NewsListActions = () => (
+const PostListActions = () => (
   <TopToolbar>
     <CreateButton />
     <ExportButton />
@@ -19,7 +19,7 @@ const NewsListActions = () => (
 
 export const NewsList = () => {
   return (
-    <List actions={<NewsListActions />}>
+    <List actions={<PostListActions />}>
       <Datagrid>
         {/* <NumberField source="id"  /> */}
         <TextField source="title" />
@@ -27,8 +27,8 @@ export const NewsList = () => {
         <DateField source="createdAt" />
         <TextField source="thumbnail" />
         <TextField source="tags" />
-        <EditButton />
-        <DeleteButton />
+        <EditButton label={"Edit"} />
+        <DeleteButton label={"Delete"} />
       </Datagrid>
     </List>
   );

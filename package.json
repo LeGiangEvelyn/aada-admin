@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "ra-data-springboot-rest": "^1.0.1"
+  }
+}

@@ -73,11 +73,11 @@ export default (httpClient = fetchUtils.fetchJson): DataProvider => ({
     const url = `${apiUrl}/${resource}?${stringify(query)}`;
 
     return httpClient(url).then(({ json }) => {
-      //   if (!json.has("total")) {
-      //     throw new Error(
-      //       "The total is missing in the HTTP Response. The jsonServer Data Provider expects responses for lists of resources to contain this header with the total number of results to build the pagination. If you are using CORS, did you declare X-Total-Count in the Access-Control-Expose-Headers header?"
-      //     );
-      //   }
+      if (!json["total"]) {
+        throw new Error(
+          "The total is missing in the HTTP Response. The jsonServer Data Provider expects responses for lists of resources to contain this header with the total number of results to build the pagination."
+        );
+      }
       return {
         data: json.data,
         total: json.total,
@@ -89,6 +89,7 @@ export default (httpClient = fetchUtils.fetchJson): DataProvider => ({
     httpClient(`${apiUrl}/${resource}/${params.id}`, {
       method: "PUT",
       body: JSON.stringify(params.data),
+      headers: { Authorization: "CookieUtils.getToken()" },
     }).then(({ json }) => ({ data: json })),
 
   // json-server doesn't handle filters on UPDATE route, so we fallback to calling UPDATE n times instead
