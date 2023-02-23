@@ -8,6 +8,7 @@ import {
   TopToolbar,
   CreateButton,
   ExportButton,
+  NumberField,
 } from "react-admin";
 
 const NewsListActions = () => (
@@ -21,7 +22,7 @@ export const NewsList = () => {
   return (
     <List actions={<NewsListActions />}>
       <Datagrid>
-        {/* <NumberField source="id"  /> */}
+        <NumberField source="id" />
         <TextField source="title" />
         <TextField source="shortContent" />
         <DateField source="createdAt" />

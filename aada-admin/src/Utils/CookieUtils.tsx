@@ -18,6 +18,7 @@ function setCookie(key: string, value: string, option: any) {
 }
 
 function getCookie(key: string) {
+  if (Cookies.get(key) == undefined) return "";
   return Cookies.get(key);
 }
 
@@ -29,7 +30,7 @@ export function setToken(token: string) {
   setCookie(TOKEN_ID_COOKIES, token, COOKIES_OPTIONS);
 }
 export function getToken() {
-  return getCookie(TOKEN_ID_COOKIES);
+  return getCookie(TOKEN_ID_COOKIES) as string;
 }
 
 export function logout() {

@@ -4,11 +4,20 @@ import NewsEdit from "./component/News/NewsEdit";
 import { NewsList } from "./component/News/NewsList";
 import dataProvider from "./dataProvider";
 import authProvider from "./authProvider";
-import CreateItem from "./User/Create";
+import { UserList } from "./component/User/UserList";
+import CreateItem from "./component/News/Create";
 
 export default function App() {
   return (
     <Admin dataProvider={dataProvider()} authProvider={authProvider}>
+      <Resource
+        name="dashboard"
+      />
+
+      <Resource
+        name="users"
+        list={UserList}
+      />
       <Resource
         name="news"
         list={NewsList}
@@ -16,15 +25,8 @@ export default function App() {
         create={CreateItem}
       />
       <CustomRoutes>
-        <Route path="http://localhost:3000/admin" />
+        <Route path="http://localhost:3000/api/v2/admin" />
       </CustomRoutes>
-      <Resource
-        name="dashboard"
-        list={NewsList}
-        edit={NewsEdit}
-        create={CreateItem}
-      />
-
       {/* edit={EditGuesser} /> */}
     </Admin>
   );

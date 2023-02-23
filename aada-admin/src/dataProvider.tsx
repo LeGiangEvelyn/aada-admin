@@ -1,6 +1,6 @@
 import { stringify } from "query-string";
 import { fetchUtils, DataProvider } from "ra-core";
-import { apiUrl } from "./model/AppConfig";
+import { apiUrl, headers } from "./model/AppConfig";
 
 /**
  * Maps react-admin queries to a json-server powered REST API
@@ -20,20 +20,25 @@ import { apiUrl } from "./model/AppConfig";
  *
  * export default App;
  */
+
 export default (httpClient = fetchUtils.fetchJson): DataProvider => ({
   getList: (resource, params) => {
     const { page, perPage } = params.pagination;
     const { field, order } = params.sort;
     const query = {
-      ...fetchUtils.flattenObject(params.filter),
+      page: page - 1,
+      perPage: perPage,
       sort: field,
       order: order,
-      _start: (page - 1) * perPage,
-      _end: page * perPage,
     };
     const url = `${apiUrl}/${resource}?${stringify(query)}`;
 
-    return httpClient(url).then(({ json }) => {
+    return httpClient(url,
+      {
+        method: "GET",
+        headers: headers,
+      },
+    ).then(({ json }) => {
       if (!json["total"]) {
         throw new Error(
           "The total is missing in the HTTP Response. The jsonServer Data Provider expects responses for lists of resources to contain this header with the total number of results to build the pagination."
@@ -48,7 +53,7 @@ export default (httpClient = fetchUtils.fetchJson): DataProvider => ({
 
   getOne: (resource, params) =>
     httpClient(`${apiUrl}/${resource}/${params.id}`).then(({ json }) => ({
-      data: json,
+      data: json.data,
     })),
 
   getMany: (resource, params) => {
@@ -56,7 +61,7 @@ export default (httpClient = fetchUtils.fetchJson): DataProvider => ({
       id: params.ids,
     };
     const url = `${apiUrl}/${resource}?${stringify(query)}`;
-    return httpClient(url).then(({ json }) => ({ data: json }));
+    return httpClient(url).then(({ json }) => ({ data: json.data }));
   },
 
   getManyReference: (resource, params) => {
@@ -89,8 +94,9 @@ export default (httpClient = fetchUtils.fetchJson): DataProvider => ({
     httpClient(`${apiUrl}/${resource}/${params.id}`, {
       method: "PUT",
       body: JSON.stringify(params.data),
-      headers: { Authorization: "CookieUtils.getToken()" },
-    }).then(({ json }) => ({ data: json })),
+      headers: headers,
+    }).then(({ json }) => ({ data: json.data }))
+      .catch((error) => Promise.reject(error)),
 
   // json-server doesn't handle filters on UPDATE route, so we fallback to calling UPDATE n times instead
   updateMany: (resource, params) =>
@@ -99,6 +105,7 @@ export default (httpClient = fetchUtils.fetchJson): DataProvider => ({
         httpClient(`${apiUrl}/${resource}/${id}`, {
           method: "PUT",
           body: JSON.stringify(params.data),
+          headers: headers,
         })
       )
     ).then((responses) => ({ data: responses.map(({ json }) => json.id) })),
@@ -107,14 +114,17 @@ export default (httpClient = fetchUtils.fetchJson): DataProvider => ({
     httpClient(`${apiUrl}/${resource}`, {
       method: "POST",
       body: JSON.stringify(params.data),
-    }).then(({ json }) => ({
-      data: { ...params.data, id: json.id },
-    })),
+      headers: headers,
+    }).then(({ json }) => ({ data: { ...params.data, id: json.id } }))
+      .catch((error) => Promise.reject(error)),
 
   delete: (resource, params) =>
     httpClient(`${apiUrl}/${resource}/${params.id}`, {
       method: "DELETE",
-    }).then(({ json }) => ({ data: json })),
+      headers: headers,
+    })
+      .then(({ json }) => ({ data: json.status }))
+      .catch((error) => Promise.reject(error)),
 
   // json-server doesn't handle filters on DELETE route, so we fallback to calling DELETE n times instead
   deleteMany: (resource, params) =>
@@ -122,6 +132,7 @@ export default (httpClient = fetchUtils.fetchJson): DataProvider => ({
       params.ids.map((id) =>
         httpClient(`${apiUrl}/${resource}/${id}`, {
           method: "DELETE",
+          headers: headers,
         })
       )
     ).then((responses) => ({ data: responses.map(({ json }) => json.id) })),

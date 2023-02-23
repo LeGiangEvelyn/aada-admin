@@ -12,7 +12,8 @@ const authProvider: AuthProvider = {
       body: JSON.stringify({ username, password }),
       headers: new Headers({ "Content-Type": "application/json" }),
     });
-    const token = data.json.accessToken;
+    const token = data.json.token;
+    console.log("This token: " + token);
     CookieUtils.setToken(token);
     localStorage.setItem("username", username);
     return token;
@@ -25,7 +26,6 @@ const authProvider: AuthProvider = {
 
   checkAuth: () => {
     const token = CookieUtils.getToken();
-    console.log("token: ", CookieUtils.getToken());
     return token ? Promise.resolve() : Promise.reject();
   },
 
@@ -38,67 +38,21 @@ const authProvider: AuthProvider = {
     return Promise.resolve();
   },
   getPermissions: async function () {
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: "CookieUtils.getToken()",
-    };
-    //   const res = await fetchUtils.fetchJson(apiUrl + "/permission", {
-    //     method: "GET",
-    //     headers,
-    //   });
-    //   console.log("token: ", CookieUtils.getToken());
+    const headers = new Headers({
+      Authorization: "Bearer " + CookieUtils.getToken(),
+    });
 
-    //   return res.json;
+    console.log("headers: ", headers);
+
+    const res = await fetchUtils.fetchJson(apiUrl + "/users/permission", {
+      method: "GET",
+      headers,
+    });
+
+    console.log("Res " + res.json);
+
+    return res;
   },
 };
 
 export default authProvider;
-
-// async function login(username: string, password: string) {
-//   const data = await fetchUtils.fetchJson(loginURI, {
-//     method: "POST",
-//     body: JSON.stringify({ username, password }),
-//     headers: new Headers({ "Content-Type": "application/json" }),
-//   });
-//   const token = data.json.accessToken;
-//   CookieUtils.setToken(token);
-//   localStorage.setItem("username", username);
-//   return token;
-// }
-
-// async function logout() {
-//   CookieUtils.logout();
-//   return Promise.resolve();
-// }
-
-// async function checkError(params: { status: any }) {
-//   const { status } = params;
-//   if (status === 401 || status === 403) {
-//     CookieUtils.logout();
-//     return Promise.reject();
-//   }
-//   return Promise.resolve();
-// }
-
-// async function checkAuth() {
-//   const token = CookieUtils.getToken();
-//   return token ? true : Promise.reject();
-// }
-
-// export type AuthRedirectResult = {
-//   redirectTo?: string | false;
-//   logoutOnFailure?: boolean;
-// };
-
-// async function getPermissions() {
-//   const headers = {
-//     "Content-Type": "application/json",
-//     Authorization: CookieUtils.getToken(),
-//   };
-//   const res = await fetchUtils.fetchJson(apiUrl + "/permission", {
-//     method: "GET",
-//     headers,
-//   });
-
-//   return res.json;
-// }
